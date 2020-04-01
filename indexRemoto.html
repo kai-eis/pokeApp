@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <LINK REL=StyleSheet HREF="style.css" TYPE="text/css" MEDIA=screen>
+    <title>PokeApp</title>
+
+    
+    <script>
+        const URL = "https://pokeapi.co/api/v2/pokemon/";
+        var xhr = new XMLHttpRequest();
+
+        //AL PULSAR ENTER SE EJECUTA LA FUNCIÓN
+        document.onkeydown = function (evt) {
+            var keyCode = evt ? (evt.which ? evt.which : evt.keyCode) : event.keyCode;
+            if (keyCode == 13) {
+                enviarDatos()
+            }
+        }
+        
+        function enviarDatos() {
+
+            limpiarDOM()
+
+            var criterioDeBusqueda = document.getElementById("valorIntroducidoPorUsuario").value;
+            console.log("El usuario está buscando " + criterioDeBusqueda);
+
+            var URL_completa = URL + criterioDeBusqueda + "/";
+            console.log("La url completa es " + URL_completa);
+
+            var URL_formateada = encodeURI(URL_completa);//traduce espacios acentos y caracteres raros
+
+            var criterioDeBusqueda_json = JSON.stringify(criterioDeBusqueda);
+            console.log("En JSON es " + criterioDeBusqueda_json);
+
+            xhr.open('GET', URL_formateada, true);
+            xhr.onreadystatechange = procesarEventos;
+            xhr.send();
+        }
+        
+        function procesarEventos() {
+            if (xhr.readyState == 4) {
+                console.log("La comunicacion ha terminado con estatus " + xhr.status);
+                if (xhr.status === 200) {
+                    console.log("Respuesta buena");
+                    let resultados_busqueda = JSON.parse(xhr.responseText);
+                    if (resultados_busqueda.resultCount == 0) {
+                        alert("La busqueda no produjo resultados");
+                    } else {
+                        generarDivs()
+                    }
+                }
+
+                else {
+                    console.log("Fallo en el envío de datos");
+                }
+            }
+
+        }
+        
+        function generarDivs() {
+            let resultados_busqueda = JSON.parse(xhr.responseText);
+
+            let nombrePokemon = resultados_busqueda.name;
+            console.log("El nombre del Pokemon es " + nombrePokemon);
+
+            let pesoPokemon = resultados_busqueda.height;
+            console.log("Su peso es de " + pesoPokemon + " lbs");
+
+            let alturaPokemon = resultados_busqueda.weight;
+            console.log("Su altura es de " + alturaPokemon + " cm");
+
+            console.log("La/s habilidades del pokemon es/son:");
+            for (let i = 0; i < resultados_busqueda.abilities.length; i++) {
+                var habilidades = resultados_busqueda.abilities[i];
+                console.log(habilidades.ability.name);
+            }
+
+            for (let i = 0; i < resultados_busqueda.types.length; i++) {
+                var tipoPokemon = resultados_busqueda.types[i];
+                console.log("Pokemon tipo " + tipoPokemon.type.name);
+            }
+
+            var divPadre = document.getElementById("anidarResultados");
+
+            var divFotosPokemon = document.createElement("div");
+            divFotosPokemon.classList.add("col-md-6");
+            divFotosPokemon.id = "dvPokemonFoto";
+            divPadre.appendChild(divFotosPokemon);
+
+            var fotoPokemon = document.createElement("img");
+            fotoPokemon.src = resultados_busqueda.sprites.front_default;
+            divFotosPokemon.appendChild(fotoPokemon);
+            
+            var divInfoPokemon = document.createElement("div");
+            divInfoPokemon.classList.add("col-md-5");
+            divInfoPokemon.id = "dvPokemonInfo";
+            divPadre.appendChild(divInfoPokemon);
+
+            var tituloNombrePokemon = document.createElement("h2");
+            tituloNombrePokemon.innerHTML = nombrePokemon.charAt(0).toUpperCase() + nombrePokemon.slice(1);
+            tituloNombrePokemon.classList.add("tituloPokemon");
+            divInfoPokemon.appendChild(tituloNombrePokemon);
+
+            var tablaInfoPokemon = document.createElement("table");
+
+            var infoPesoTodo = document.createElement("tr");
+            tablaInfoPokemon.appendChild(infoPesoTodo);
+
+            var tituloPeso = document.createElement("td");
+            tituloPeso.innerHTML = "Weight: "
+            tituloPeso.classList.add("tablaIzquierda");
+            infoPesoTodo.appendChild(tituloPeso);
+
+            var pesoRecogido = document.createElement("td");
+            pesoRecogido.innerHTML = pesoPokemon + " Lbs.";
+            pesoRecogido.classList.add("tablaDerecha");
+            infoPesoTodo.appendChild(pesoRecogido);
+            
+            var infoAlturaTodo = document.createElement("tr");
+            tablaInfoPokemon.appendChild(infoAlturaTodo);
+
+            var tituloAltura = document.createElement("td");
+            tituloAltura.innerHTML = "Height: "
+            tituloAltura.classList.add("tablaIzquierda");
+            infoAlturaTodo.appendChild(tituloAltura);
+
+            var alturaRecogida = document.createElement("td");
+            alturaRecogida.innerHTML = alturaPokemon + " cms.";
+            alturaRecogida.classList.add("tablaDerecha");
+            infoAlturaTodo.appendChild(alturaRecogida);
+            
+            var infoHabilidadTodo = document.createElement("tr");
+            tablaInfoPokemon.appendChild(infoHabilidadTodo);
+
+            var tituloHabilidad = document.createElement("td");
+            tituloHabilidad.innerHTML = "Abilitie/s: "
+            tituloHabilidad.classList.add("tablaIzquierda");
+            infoHabilidadTodo.appendChild(tituloHabilidad);
+            
+            var habilidadRecogida = document.createElement("td");
+            habilidadRecogida.classList.add("tablaDerecha");
+            for (let i = 0; i < resultados_busqueda.abilities.length; i++) {
+                habilidadRecogida.innerHTML += resultados_busqueda.abilities[i].ability.name + "<br />";
+            }
+            infoHabilidadTodo.appendChild(habilidadRecogida);
+
+
+            var infoTipoTodo = document.createElement("tr");
+            tablaInfoPokemon.appendChild(infoTipoTodo);
+
+            var tituloTipo = document.createElement("td");
+            tituloTipo.innerHTML = "Type: "
+            tituloTipo.classList.add("tablaIzquierda");
+            infoTipoTodo.appendChild(tituloTipo);
+
+
+            var tipoRecogido = document.createElement("td");
+            tipoRecogido.classList.add("tablaDerecha");
+            for (let i = 0; i < resultados_busqueda.types.length; i++) {
+                tipoRecogido.innerHTML += resultados_busqueda.types[i].type.name + "<br />";
+            }
+            infoTipoTodo.appendChild(tipoRecogido);
+
+
+            tablaInfoPokemon.classList.add("col-md-11");
+            tablaInfoPokemon.classList.add("mx-auto");
+            tablaInfoPokemon.id = "tablaInfo";
+            divInfoPokemon.appendChild(tablaInfoPokemon);
+        }
+
+        function limpiarDOM() {
+            let divFotosPokemon = document.getElementById("dvPokemonFoto");
+            let divInfoPokemon = document.getElementById("dvPokemonInfo");
+
+            if ((divFotosPokemon != null) && (divInfoPokemon != null)) {
+                divFotosPokemon.parentNode.removeChild(divFotosPokemon);
+                divInfoPokemon.parentNode.removeChild(divInfoPokemon);
+            }
+        }
+
+    </script>
+    
+</head>
+
+<body>
+    <nav class="navbar">
+        PokeApp
+    </nav>
+    
+    <div class="row col-md-8 mx-auto barra_busqueda">
+        <!--Search bar-->
+        <input id="valorIntroducidoPorUsuario" class="form-control col-md-9" type="text" placeholder="Find a Pokemon..."
+            aria-label="Search">
+            <div class="col-md-1"></div>
+        <!--Esto es sólo para separar-->
+        <input type="button" class="btn col-md-2 botonBusqueda" onclick="enviarDatos()" value="Go">
+    </div>
+    <!--Search bar-->
+    
+    <div class="col-md-8 mx-auto" id="anidarResultados"></div>
+</body>
+</html>
